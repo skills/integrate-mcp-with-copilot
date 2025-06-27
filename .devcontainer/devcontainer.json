@@ -1,13 +1,6 @@
 {
   "name": "Python 3",
-  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.13",
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-
-  },
+  "image": "python:3.13-slim",
   "forwardPorts": [8000],
   "postCreateCommand": "pip install -r requirements.txt",
   "customizations": {
@@ -15,8 +8,7 @@
       "extensions": [
         "GitHub.copilot",
         "ms-python.python",
-        "ms-python.debugpy",
-        "dbaeumer.vscode-eslint"
+        "ms-python.debugpy"
       ],
       "settings": {
         "chat.agent.enabled": true,
