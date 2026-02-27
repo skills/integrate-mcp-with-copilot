@@ -39,6 +39,35 @@
         </form>
         <div id="message" class="hidden"></div>
       </section>
+
+      <section id="manage-container">
+        <h3 id="manage-title">Add New Activity</h3>
+        <form id="manage-form">
+          <input type="hidden" id="edit-mode" value="create" />
+          <input type="hidden" id="original-name" value="" />
+          <div class="form-group">
+            <label for="activity-name">Activity Name:</label>
+            <input type="text" id="activity-name" required placeholder="e.g. Robotics Club" />
+          </div>
+          <div class="form-group">
+            <label for="activity-description">Description:</label>
+            <input type="text" id="activity-description" required placeholder="Brief description" />
+          </div>
+          <div class="form-group">
+            <label for="activity-schedule">Schedule:</label>
+            <input type="text" id="activity-schedule" required placeholder="e.g. Mondays, 4:00 PM - 5:30 PM" />
+          </div>
+          <div class="form-group">
+            <label for="activity-max">Max Participants:</label>
+            <input type="number" id="activity-max" required min="1" placeholder="e.g. 20" />
+          </div>
+          <div class="manage-actions">
+            <button type="submit" id="manage-submit-btn">Create Activity</button>
+            <button type="button" id="manage-cancel-btn" class="btn-secondary hidden">Cancel</button>
+          </div>
+        </form>
+        <div id="manage-message" class="hidden"></div>
+      </section>
     </main>
 
     <footer>

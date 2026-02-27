@@ -198,3 +198,61 @@ footer {
   padding: 20px;
   color: #666;
 }
+
+/* Activity card header with action buttons */
+.activity-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.activity-card-header h4 {
+  margin-bottom: 0;
+  color: #0066cc;
+}
+
+.activity-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-icon {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: inherit;
+}
+
+.btn-icon:hover {
+  background-color: #e8eaf6;
+}
+
+.btn-icon.btn-danger:hover {
+  background-color: #ffebee;
+  border-color: #ef9a9a;
+}
+
+/* Secondary button (Cancel) */
+.btn-secondary {
+  background-color: #e0e0e0;
+  color: #333;
+  margin-left: 10px;
+}
+
+.btn-secondary:hover {
+  background-color: #bdbdbd;
+}
+
+/* Manage form actions row */
+.manage-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
