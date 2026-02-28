@@ -19,63 +19,43 @@ current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
 
-# In-memory activity database
-activities = {
-    "Chess Club": {
-        "description": "Learn strategies and compete in chess tournaments",
-        "schedule": "Fridays, 3:30 PM - 5:00 PM",
-        "max_participants": 12,
-        "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
-    },
-    "Programming Class": {
-        "description": "Learn programming fundamentals and build software projects",
-        "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
-        "max_participants": 20,
-        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
-    },
-    "Gym Class": {
-        "description": "Physical education and sports activities",
-        "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
-        "max_participants": 30,
-        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
-    },
-    "Soccer Team": {
-        "description": "Join the school soccer team and compete in matches",
-        "schedule": "Tuesdays and Thursdays, 4:00 PM - 5:30 PM",
-        "max_participants": 22,
-        "participants": ["liam@mergington.edu", "noah@mergington.edu"]
-    },
-    "Basketball Team": {
-        "description": "Practice and play basketball with the school team",
-        "schedule": "Wednesdays and Fridays, 3:30 PM - 5:00 PM",
-        "max_participants": 15,
-        "participants": ["ava@mergington.edu", "mia@mergington.edu"]
-    },
-    "Art Club": {
-        "description": "Explore your creativity through painting and drawing",
-        "schedule": "Thursdays, 3:30 PM - 5:00 PM",
-        "max_participants": 15,
-        "participants": ["amelia@mergington.edu", "harper@mergington.edu"]
-    },
-    "Drama Club": {
-        "description": "Act, direct, and produce plays and performances",
-        "schedule": "Mondays and Wednesdays, 4:00 PM - 5:30 PM",
-        "max_participants": 20,
-        "participants": ["ella@mergington.edu", "scarlett@mergington.edu"]
-    },
-    "Math Club": {
-        "description": "Solve challenging problems and participate in math competitions",
-        "schedule": "Tuesdays, 3:30 PM - 4:30 PM",
-        "max_participants": 10,
-        "participants": ["james@mergington.edu", "benjamin@mergington.edu"]
-    },
-    "Debate Team": {
-        "description": "Develop public speaking and argumentation skills",
-        "schedule": "Fridays, 4:00 PM - 5:30 PM",
-        "max_participants": 12,
-        "participants": ["charlotte@mergington.edu", "henry@mergington.edu"]
-    }
-}
+
+# Database setup
+import sqlalchemy
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from databases import Database
+
+DATABASE_URL = "sqlite+aiosqlite:///./activities.db"
+database = Database(DATABASE_URL)
+Base = declarative_base()
+
+class Activity(Base):
+    __tablename__ = "activities"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    description = Column(String)
+    schedule = Column(String)
+    max_participants = Column(Integer)
+    participants = relationship("Participant", back_populates="activity")
+
+class Participant(Base):
+    __tablename__ = "participants"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True)
+    activity_id = Column(Integer, ForeignKey("activities.id"))
+    activity = relationship("Activity", back_populates="participants")
+
+# Create tables if not exist
+import asyncio
+from sqlalchemy.ext.asyncio import create_async_engine
+engine = create_async_engine(DATABASE_URL, echo=True, future=True)
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+asyncio.get_event_loop().run_until_complete(create_tables())
+
 
 
 @app.get("/")
@@ -83,50 +63,80 @@ def root():
     return RedirectResponse(url="/static/index.html")
 
 
+
+import sqlalchemy as sa
+from fastapi import Depends
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
 @app.get("/activities")
-def get_activities():
-    return activities
+async def get_activities():
+    query = sa.select(Activity)
+    rows = await database.fetch_all(query)
+    result = {}
+    for row in rows:
+        # Get participants for each activity
+        p_query = sa.select(Participant.email).where(Participant.activity_id == row.id)
+        participants = [p[0] for p in await database.fetch_all(p_query)]
+        result[row.name] = {
+            "description": row.description,
+            "schedule": row.schedule,
+            "max_participants": row.max_participants,
+            "participants": participants
+        }
+    return result
+
 
 
 @app.post("/activities/{activity_name}/signup")
-def signup_for_activity(activity_name: str, email: str):
-    """Sign up a student for an activity"""
-    # Validate activity exists
-    if activity_name not in activities:
+async def signup_for_activity(activity_name: str, email: str):
+    # Find activity
+    query = sa.select(Activity).where(Activity.name == activity_name)
+    activity = await database.fetch_one(query)
+    if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
-
-    # Get the specific activity
-    activity = activities[activity_name]
-
-    # Validate student is not already signed up
-    if email in activity["participants"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Student is already signed up"
-        )
-
-    # Add student
-    activity["participants"].append(email)
+    # Check if already signed up
+    p_query = sa.select(Participant).where(
+        (Participant.activity_id == activity.id) & (Participant.email == email)
+    )
+    existing = await database.fetch_one(p_query)
+    if existing:
+        raise HTTPException(status_code=400, detail="Student is already signed up")
+    # Check max participants
+    p_count_query = sa.select(sa.func.count()).select_from(Participant).where(Participant.activity_id == activity.id)
+    count = await database.fetch_val(p_count_query)
+    if count >= activity.max_participants:
+        raise HTTPException(status_code=400, detail="Activity is full")
+    # Add participant
+    ins = Participant.__table__.insert().values(email=email, activity_id=activity.id)
+    await database.execute(ins)
     return {"message": f"Signed up {email} for {activity_name}"}
 
 
+
 @app.delete("/activities/{activity_name}/unregister")
-def unregister_from_activity(activity_name: str, email: str):
-    """Unregister a student from an activity"""
-    # Validate activity exists
-    if activity_name not in activities:
+async def unregister_from_activity(activity_name: str, email: str):
+    # Find activity
+    query = sa.select(Activity).where(Activity.name == activity_name)
+    activity = await database.fetch_one(query)
+    if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
-
-    # Get the specific activity
-    activity = activities[activity_name]
-
-    # Validate student is signed up
-    if email not in activity["participants"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Student is not signed up for this activity"
-        )
-
-    # Remove student
-    activity["participants"].remove(email)
+    # Find participant
+    p_query = sa.select(Participant).where(
+        (Participant.activity_id == activity.id) & (Participant.email == email)
+    )
+    participant = await database.fetch_one(p_query)
+    if not participant:
+        raise HTTPException(status_code=400, detail="Student is not signed up for this activity")
+    # Remove participant
+    del_query = Participant.__table__.delete().where(
+        (Participant.activity_id == activity.id) & (Participant.email == email)
+    )
+    await database.execute(del_query)
     return {"message": f"Unregistered {email} from {activity_name}"}
