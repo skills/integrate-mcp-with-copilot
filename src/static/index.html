@@ -39,6 +39,47 @@
         </form>
         <div id="message" class="hidden"></div>
       </section>
+
+      <section id="admin-container">
+        <h3>Manage Activities</h3>
+        <p class="section-intro">
+          Create a new activity or select an existing one to edit or delete it.
+        </p>
+
+        <div class="admin-toolbar">
+          <div class="form-group">
+            <label for="admin-activity-select">Edit Existing Activity:</label>
+            <select id="admin-activity-select">
+              <option value="">-- Create a new activity --</option>
+            </select>
+          </div>
+          <button type="button" id="reset-admin-form">Create New</button>
+        </div>
+
+        <form id="admin-form">
+          <div class="form-group">
+            <label for="admin-name">Activity Name:</label>
+            <input type="text" id="admin-name" required placeholder="Robotics Club" />
+          </div>
+          <div class="form-group">
+            <label for="admin-description">Description:</label>
+            <textarea id="admin-description" required placeholder="Build robots and compete in regional events"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="admin-schedule">Schedule:</label>
+            <input type="text" id="admin-schedule" required placeholder="Mondays and Thursdays, 3:30 PM - 5:00 PM" />
+          </div>
+          <div class="form-group">
+            <label for="admin-max-participants">Maximum Participants:</label>
+            <input type="number" id="admin-max-participants" required min="1" placeholder="20" />
+          </div>
+          <div class="button-row">
+            <button type="submit" id="admin-save-button">Create Activity</button>
+            <button type="button" id="admin-delete-button" class="secondary hidden">Delete Activity</button>
+          </div>
+        </form>
+        <div id="admin-message" class="hidden"></div>
+      </section>
     </main>
 
     <footer>

@@ -8,6 +8,7 @@ for extracurricular activities at Mergington High School.
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, Field
 import os
 from pathlib import Path
 
@@ -78,6 +79,35 @@ activities = {
 }
 
 
+class ActivityPayload(BaseModel):
+    name: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    schedule: str = Field(min_length=1)
+    max_participants: int = Field(gt=0)
+
+
+def validate_activity_payload(payload: ActivityPayload):
+    cleaned_name = payload.name.strip()
+    cleaned_description = payload.description.strip()
+    cleaned_schedule = payload.schedule.strip()
+
+    if not cleaned_name:
+        raise HTTPException(status_code=400, detail="Activity name is required")
+
+    if not cleaned_description:
+        raise HTTPException(status_code=400, detail="Description is required")
+
+    if not cleaned_schedule:
+        raise HTTPException(status_code=400, detail="Schedule is required")
+
+    return {
+        "name": cleaned_name,
+        "description": cleaned_description,
+        "schedule": cleaned_schedule,
+        "max_participants": payload.max_participants,
+    }
+
+
 @app.get("/")
 def root():
     return RedirectResponse(url="/static/index.html")
@@ -86,6 +116,66 @@ def root():
 @app.get("/activities")
 def get_activities():
     return activities
+
+
+@app.post("/activities")
+def create_activity(payload: ActivityPayload):
+    activity_data = validate_activity_payload(payload)
+    activity_name = activity_data["name"]
+
+    if activity_name in activities:
+        raise HTTPException(status_code=400, detail="Activity already exists")
+
+    activities[activity_name] = {
+        "description": activity_data["description"],
+        "schedule": activity_data["schedule"],
+        "max_participants": activity_data["max_participants"],
+        "participants": [],
+    }
+
+    return {"message": f"Created activity {activity_name}"}
+
+
+@app.put("/activities/{activity_name}")
+def update_activity(activity_name: str, payload: ActivityPayload):
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    activity_data = validate_activity_payload(payload)
+    updated_name = activity_data["name"]
+    existing_activity = activities[activity_name]
+    participant_count = len(existing_activity["participants"])
+
+    if activity_data["max_participants"] < participant_count:
+        raise HTTPException(
+            status_code=400,
+            detail="Max participants cannot be lower than current enrollment",
+        )
+
+    if updated_name != activity_name and updated_name in activities:
+        raise HTTPException(status_code=400, detail="Activity name already exists")
+
+    updated_activity = {
+        "description": activity_data["description"],
+        "schedule": activity_data["schedule"],
+        "max_participants": activity_data["max_participants"],
+        "participants": existing_activity["participants"],
+    }
+
+    if updated_name != activity_name:
+        del activities[activity_name]
+
+    activities[updated_name] = updated_activity
+    return {"message": f"Updated activity {updated_name}"}
+
+
+@app.delete("/activities/{activity_name}")
+def delete_activity(activity_name: str):
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    del activities[activity_name]
+    return {"message": f"Deleted activity {activity_name}"}
 
 
 @app.post("/activities/{activity_name}/signup")
@@ -104,6 +194,9 @@ def signup_for_activity(activity_name: str, email: str):
             status_code=400,
             detail="Student is already signed up"
         )
+
+    if len(activity["participants"]) >= activity["max_participants"]:
+        raise HTTPException(status_code=400, detail="Activity is full")
 
     # Add student
     activity["participants"].append(email)

@@ -9,7 +9,7 @@ body {
   font-family: Arial, sans-serif;
   line-height: 1.6;
   color: #333;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
   background-color: #f5f5f5;
@@ -29,15 +29,15 @@ header h1 {
 }
 
 main {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 30px;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
 }
 
 @media (min-width: 768px) {
   main {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(380px, 2fr) minmax(320px, 1fr);
   }
 }
 
@@ -47,7 +47,17 @@ section {
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px;
+}
+
+#activities-container {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 1100px) {
+  #activities-container {
+    grid-column: auto;
+    grid-row: span 2;
+  }
 }
 
 section h3 {
@@ -68,6 +78,14 @@ section h3 {
 .activity-card h4 {
   margin-bottom: 10px;
   color: #0066cc;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .activity-card p {
@@ -111,23 +129,59 @@ section h3 {
 }
 
 .delete-btn {
-  background: none;
-  border: none;
+  background-color: #ffebee;
+  border: 1px solid #ef9a9a;
   color: #c62828;
   cursor: pointer;
-  font-size: 14px;
-  padding: 2px 5px;
+  font-size: 13px;
+  padding: 4px 8px;
   transition: all 0.2s;
   border-radius: 3px;
 }
 
 .delete-btn:hover {
-  background-color: #ffebee;
+  background-color: #ffcdd2;
+}
+
+.edit-btn,
+.secondary {
+  background-color: #e8eaf6;
+  color: #1a237e;
+  border: 1px solid #c5cae9;
+}
+
+.edit-btn:hover,
+.secondary:hover {
+  background-color: #c5cae9;
 }
 
 .participants-section p {
   color: #777;
   font-style: italic;
+}
+
+.section-intro {
+  margin-bottom: 16px;
+  color: #555;
+}
+
+.admin-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar .form-group {
+  flex: 1 1 240px;
+  margin-bottom: 0;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .form-group {
@@ -141,12 +195,18 @@ section h3 {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
+}
+
+.form-group textarea {
+  min-height: 110px;
+  resize: vertical;
 }
 
 button {
