@@ -5,11 +5,16 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+from auth import (
+    get_current_user, require_organizer, require_admin,
+    LoginRequest, TokenResponse, TokenData, Role,
+    verify_password, create_access_token, users_db
+)
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -83,14 +88,59 @@ def root():
     return RedirectResponse(url="/static/index.html")
 
 
-@app.get("/activities")
+@app.post("/auth/login", response_model=TokenResponse)
+def login(request: LoginRequest):
+    """
+    Authenticate with email and password, receive JWT token.
+    
+    Sample users for testing:
+    - email: student@mergington.edu, password: student_password (role: student)
+    - email: organizer@mergington.edu, password: organizer_password (role: organizer)
+    - email: admin@mergington.edu, password: admin_password (role: admin)
+    """
+    # Check if user exists
+    if request.email not in users_db:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    user = users_db[request.email]
+    
+    # Verify password
+    if not verify_password(request.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Create token
+    access_token = create_access_token(email=user.email, role=user.role)
+    
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        role=user.role.value
+    )
 def get_activities():
     return activities
 
 
 @app.post("/activities/{activity_name}/signup")
-def signup_for_activity(activity_name: str, email: str):
-    """Sign up a student for an activity"""
+def signup_for_activity(
+    activity_name: str,
+    email: str,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Sign up a student for an activity (requires authentication)"""
+    
+    # Authorization: User can only sign up themselves, unless they're organizer/admin
+    if current_user.email != email and current_user.role not in [Role.ORGANIZER, Role.ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage your own enrollments"
+        )
+    
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -111,8 +161,20 @@ def signup_for_activity(activity_name: str, email: str):
 
 
 @app.delete("/activities/{activity_name}/unregister")
-def unregister_from_activity(activity_name: str, email: str):
-    """Unregister a student from an activity"""
+def unregister_from_activity(
+    activity_name: str,
+    email: str,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Unregister a student from an activity (requires authentication)"""
+    
+    # Authorization: User can only unregister themselves, unless they're organizer/admin
+    if current_user.email != email and current_user.role not in [Role.ORGANIZER, Role.ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage your own enrollments"
+        )
+    
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
