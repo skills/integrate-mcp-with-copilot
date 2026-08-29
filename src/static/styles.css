@@ -57,12 +57,48 @@ section h3 {
   color: #1a237e;
 }
 
+.toolbar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px;
+  background: #f3f4ff;
+  border: 1px solid #dfe3ff;
+  border-radius: 8px;
+}
+
+.toolbar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toolbar-field label {
+  font-weight: bold;
+  color: #1a237e;
+  font-size: 0.85rem;
+}
+
+.toolbar-field input,
+.toolbar-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
 .activity-card {
   margin-bottom: 15px;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #f9f9f9;
+}
+
+.activity-category {
+  margin-bottom: 10px;
+  color: #3949ab;
 }
 
 .activity-card h4 {
@@ -74,7 +110,6 @@ section h3 {
   margin-bottom: 8px;
 }
 
-/* New styles for participants section */
 .participants-container {
   margin-top: 15px;
   padding-top: 12px;
@@ -100,7 +135,6 @@ section h3 {
   justify-content: space-between;
 }
 
-/* Remove the bullet point pseudo-element */
 .participants-section ul li::before {
   display: none;
 }
