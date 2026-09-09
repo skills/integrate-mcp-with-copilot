@@ -47,4 +47,6 @@ The application uses a simple data model with meaningful identifiers:
    - Name
    - Grade level
 
-All data is stored in memory, which means data will be reset when the server restarts.
+Activity and participant data is stored in a local SQLite database at
+`src/activities.sqlite` by default. Set the `ACTIVITY_DB_PATH` environment
+variable to use a different database location.
