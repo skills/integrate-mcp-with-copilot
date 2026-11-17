@@ -18,3 +18,4 @@ Check out these resources to learn more or get involved:
 - [Take another GitHub Skills exercise](https://learn.github.com/skills).
 - Learn more about [Model Context Protocol](https://modelcontextprotocol.io/introduction)
 - Explore the [GitHub MCP Registry](https://github.com/mcp) and try out other servers!
+- Read about [GitHub Copilot Fusion](https://docs.github.com/en/copilot/concepts/models/copilot-fusion) for model selection and orchestration in Copilot Chat
