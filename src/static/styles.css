@@ -29,16 +29,21 @@ header h1 {
 }
 
 main {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+  align-items: start;
+  gap: 24px;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 760px) {
   main {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.club-actions {
+  display: grid;
+  gap: 24px;
 }
 
 section {
@@ -47,7 +52,6 @@ section {
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px;
 }
 
 section h3 {
@@ -72,6 +76,41 @@ section h3 {
 
 .activity-card p {
   margin-bottom: 8px;
+}
+
+.activity-status {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.activity-status.inactive {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.club-management-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+.club-management-controls select {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.club-management-controls button {
+  white-space: nowrap;
 }
 
 /* New styles for participants section */
@@ -147,6 +186,12 @@ section h3 {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: 2px solid #3949ab;
+  outline-offset: 1px;
 }
 
 button {

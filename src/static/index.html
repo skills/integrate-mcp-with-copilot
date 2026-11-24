@@ -21,24 +21,58 @@
         </div>
       </section>
 
-      <section id="signup-container">
-        <h3>Sign Up for an Activity</h3>
-        <form id="signup-form">
-          <div class="form-group">
-            <label for="email">Student Email:</label>
-            <input type="email" id="email" required placeholder="your-email@mergington.edu" />
-          </div>
-          <div class="form-group">
-            <label for="activity">Select Activity:</label>
-            <select id="activity" required>
-              <option value="">-- Select an activity --</option>
-              <!-- Activity options will be loaded here -->
-            </select>
-          </div>
-          <button type="submit">Sign Up</button>
-        </form>
-        <div id="message" class="hidden"></div>
-      </section>
+      <div class="club-actions">
+        <section id="signup-container">
+          <h3>Sign Up for an Activity</h3>
+          <form id="signup-form">
+            <div class="form-group">
+              <label for="email">Student Email:</label>
+              <input type="email" id="email" required placeholder="your-email@mergington.edu" />
+            </div>
+            <div class="form-group">
+              <label for="activity">Select Activity:</label>
+              <select id="activity" required>
+                <option value="">-- Select an activity --</option>
+              </select>
+            </div>
+            <button type="submit">Sign Up</button>
+          </form>
+          <div id="message" class="hidden"></div>
+        </section>
+
+        <section id="club-management-container">
+          <h3>Manage Clubs</h3>
+          <form id="club-form">
+            <div class="form-group">
+              <label for="club-name">Club Name:</label>
+              <input type="text" id="club-name" maxlength="80" required />
+            </div>
+            <div class="form-group">
+              <label for="club-description">Description:</label>
+              <input type="text" id="club-description" maxlength="500" required />
+            </div>
+            <div class="form-group">
+              <label for="club-schedule">Schedule:</label>
+              <input type="text" id="club-schedule" required />
+            </div>
+            <div class="form-group">
+              <label for="club-location">Location:</label>
+              <input type="text" id="club-location" required />
+            </div>
+            <div class="form-group">
+              <label for="club-advisor">Advisor:</label>
+              <select id="club-advisor" required>
+                <option value="">-- Select a professor --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="club-capacity">Membership Capacity:</label>
+              <input type="number" id="club-capacity" min="1" required />
+            </div>
+            <button type="submit">Create Club</button>
+          </form>
+        </section>
+      </div>
     </main>
 
     <footer>
